@@ -28,26 +28,25 @@
     "wiki"
   ],
   "author": {
-    "name": "Armakuni",
-    "email": "hello@armakuni.com",
-    "url": "https://armakuni.com"
+    "name": "Benedict Steele",
+    "email": "benedict.steele@armakuni.com"
   },
   "contributors": [
     {
-      "name": "Benedict Steele", 
-      "email": "benedict.steele@armakuni.com"
+      "name": "Armakuni",
+      "email": "hello@armakuni.com",
+      "url": "https://armakuni.com"
     }
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/armakuni/ak-way.git",
-    "directory": "plugins/gatsby-source-guru"
+    "url": "https://github.com/armakuni/gatsby-source-guru.git"
   },
   "bugs": {
-    "url": "https://github.com/armakuni/ak-way/issues"
+    "url": "https://github.com/armakuni/gatsby-source-guru/issues"
   },
-  "homepage": "https://github.com/armakuni/ak-way/tree/main/plugins/gatsby-source-guru#readme",
+  "homepage": "https://github.com/armakuni/gatsby-source-guru#readme",
   "engines": {
     "node": ">=18.0.0"
   },
