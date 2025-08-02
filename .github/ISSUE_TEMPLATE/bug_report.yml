@@ -1,0 +1,28 @@
+name: Bug Report
+description: File a bug report to help us improve
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: What version of gatsby-source-guru are you using?
+      placeholder: e.g., 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug you encountered
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Plugin Configuration
+      description: Share your gatsby-config.js plugin configuration (remove sensitive data)
+      render: javascript
+    validations:
+      required: true
