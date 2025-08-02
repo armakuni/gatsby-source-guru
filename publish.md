@@ -16,7 +16,7 @@
 The `files` field in package.json includes:
 - `gatsby-node.js` - Main plugin implementation
 - `README.md` - Documentation
-- `LICENSE` - MIT license
+- `LICENSE` - MIT licence
 - `package.json` - Package metadata
 - `index.d.ts` - TypeScript definitions
 

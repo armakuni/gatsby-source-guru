@@ -243,7 +243,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
 }
 ```
 
-### Collection-based Organization
+### Collection-based Organisation
 
 ```javascript
 // gatsby-node.js
@@ -424,7 +424,7 @@ const GuruCardMarkdownTemplate = ({ data }) => {
       <article className="max-w-4xl mx-auto px-4 py-8">
         <header className="mb-8">
           <h1 className="text-4xl font-bold mb-4">{card.title}</h1>
-          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+          <div className="flex flex-wrap gap-4 text-sm text-grey-600">
             <span>By {card.owner.firstName} {card.owner.lastName}</span>
             <span>Updated {new Date(card.lastModified).toLocaleDateString()}</span>
             <span className="px-2 py-1 bg-blue-100 rounded">
@@ -631,7 +631,7 @@ env:
   GURU_COLLECTION_ID: ${{ secrets.GURU_COLLECTION_ID }}
 ```
 
-## Performance Optimization
+## Performance Optimisation
 
 ### Incremental Builds
 
@@ -656,7 +656,7 @@ module.exports = {
 }
 ```
 
-### Image Optimization
+### Image Optimisation
 
 ```jsx
 // Using gatsby-plugin-image with downloaded attachments

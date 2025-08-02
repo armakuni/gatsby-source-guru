@@ -619,7 +619,7 @@ exports.createSchemaCustomization = ({ actions }) => {
       id: ID!
       name: String
       description: String
-      color: String
+      colour: String
       publicCardsEnabled: Boolean
       dateCreated: String
       stats: GuruCollectionStats

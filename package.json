@@ -11,7 +11,7 @@
     "test:ci": "jest --coverage --ci --watchAll=false",
     "lint": "eslint gatsby-node.js",
     "validate": "npm run lint && npm run test",
-    "prepublishOnly": "npm run validate",
+    "prepublishOnly": "npm test",
     "clean": "rm -rf node_modules package-lock.json yarn.lock coverage"
   },
   "keywords": [

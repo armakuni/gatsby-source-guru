@@ -6,7 +6,7 @@ A Gatsby source plugin for fetching content from [GetGuru](https://www.getguru.c
 
 - 🚀 **Fetch cards** from GetGuru API with collection-based authentication
 - 📝 **Convert HTML to Markdown** using Turndown for better Gatsby integration
-- 🖼️ **Download attachments** and optimize for static hosting
+- 🖼️ **Download attachments** and optimise for static hosting
 - 🔗 **Convert internal links** between Guru cards to local page routes
 - ⚡ **GraphQL integration** with typed nodes for queries
 - 🛡️ **Error handling** with detailed logging and fallbacks
@@ -266,7 +266,7 @@ The plugin automatically converts internal Guru card links to local page routes:
 
 Files are downloaded and stored locally:
 
-- **Images**: Available for Gatsby image optimization
+- **Images**: Available for Gatsby image optimisation
 - **Documents**: Served as static assets
 - **Public files**: Direct download links maintained
 - **Private files**: Downloaded for local serving

@@ -48,7 +48,7 @@ export interface GuruUser {
 export interface GuruCollection {
   id: string
   name: string
-  color?: string
+  colour?: string
   collectionType: string
   collectionTypeDetail: string
   publicCardsEnabled: boolean
