@@ -591,9 +591,9 @@ exports.createSchemaCustomization = ({ actions }) => {
       content: String
       contentHtml: String
       title: String
-      collection: String
+      collection: GuruCollection
       collectionId: String
-      boards: [String]
+      boards: [GuruBoard]
       boardIds: [String]
       owner: String
       lastModified: String
@@ -605,6 +605,23 @@ exports.createSchemaCustomization = ({ actions }) => {
       tags: [String]
       slug: String!
       attachedFiles: [GuruAttachment]
+    }
+    
+    type GuruBoard {
+      id: String!
+      title: String!
+      slug: String
+      items: [String]
+      numberOfFacts: Int
+    }
+    
+    type GuruCollection {
+      id: String!
+      name: String!
+      color: String
+      collectionType: String
+      publicCardsEnabled: Boolean
+      collectionTypeDetail: String
     }
 
     type GuruAttachment {
