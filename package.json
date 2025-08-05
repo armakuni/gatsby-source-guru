@@ -57,6 +57,8 @@
   },
   "files": [
     "gatsby-node.js",
+    "schema.js",
+    "utils.js",
     "README.md",
     "LICENSE",
     "package.json",
