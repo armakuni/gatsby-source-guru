@@ -557,7 +557,36 @@ exports.sourceNodes = async (
         if (boardsResponse.ok) {
           const boards = await boardsResponse.json()
 
-          boards.forEach(board => {
+          // Fetch parent information for each board
+          const boardsWithParents = await Promise.all(
+            boards.map(async (board) => {
+              try {
+                const parentResponse = await fetch(
+                  `https://api.getguru.com/api/v1/folders/${board.id}/parent`,
+                  { headers }
+                )
+                
+                let parentFolder = null
+                if (parentResponse.ok) {
+                  const parentData = await parentResponse.json()
+                  parentFolder = parentData
+                }
+                
+                return {
+                  ...board,
+                  parentFolder
+                }
+              } catch (error) {
+                console.warn(`Could not fetch parent for board ${board.id}:`, error.message)
+                return {
+                  ...board,
+                  parentFolder: null
+                }
+              }
+            })
+          )
+
+          boardsWithParents.forEach(board => {
             const nodeData = {
               ...board,
               id: createNodeId(`guru-board-${board.id}`),
@@ -657,6 +686,13 @@ exports.createSchemaCustomization = ({ actions }) => {
       dateCreated: String
       lastModified: String
       owner: String
+      parentFolder: GuruParentFolder
+    }
+    
+    type GuruParentFolder {
+      id: String
+      title: String
+      slug: String
     }
   `
 
