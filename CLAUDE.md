@@ -8,7 +8,9 @@ This is a Gatsby source plugin that fetches content from GetGuru knowledge base 
 
 ## Key Architecture
 
-- **gatsby-node.js**: Main plugin file containing data fetching and GraphQL schema creation
+- **gatsby-node.js**: Main plugin file containing data fetching and core logic (445 lines)
+- **schema.js**: GraphQL type definitions separated for better maintainability (84 lines)
+- **utils.js**: Utility functions and constants for reusability (127 lines)
 - **Authentication Modes**: Supports both user auth (username/password) and collection auth (token-based)
 - **Content Processing**: Converts HTML to Markdown, handles file downloads, and processes internal links
 - **GraphQL Schema**: Creates GuruCard, GuruBoard, GuruCollection, and GuruAttachment nodes
@@ -29,17 +31,27 @@ This is a Gatsby source plugin that fetches content from GetGuru knowledge base 
 
 ## Development Commands
 
+**IMPORTANT: Always use `yarn` instead of `npm` for all package management tasks!**
+
 ```bash
 # Run tests
-npm test
-npm run test:watch
-npm run test:coverage
+yarn test
+yarn test:watch
+yarn test:coverage
+yarn test:verbose
+yarn test:ci
+
+# Package Management & Releases
+yarn version           # Check current version
+yarn version patch     # Bump patch version (1.0.7 → 1.0.8)
+yarn version minor     # Bump minor version (1.0.7 → 1.1.0)
+yarn version major     # Bump major version (1.0.7 → 2.0.0)
 
 # Linting (currently disabled - needs configuration)
-npm run lint
+yarn lint
 
 # Clean dependencies
-npm run clean
+yarn clean
 ```
 
 ## Release Process
@@ -130,8 +142,30 @@ When modifying GraphQL schema:
 4. Update version and create release
 5. Update consuming projects' GraphQL queries
 
-## Recent Changes (v1.0.4)
+## Recent Changes
 
+### v1.0.7 - Hierarchical Folder Structure Support
+- Added hierarchical folder structure support with parent-child relationships
+- Enhanced board fetching to include parent folder information
+- Improved GraphQL schema to expose parent folder data
+
+### v1.0.8 - Major Refactoring for Maintainability
+- **Modular Architecture**: Split monolithic gatsby-node.js into focused modules
+  - `gatsby-node.js`: Core plugin logic (445 lines, down from 752)
+  - `schema.js`: GraphQL type definitions (84 lines)
+  - `utils.js`: Utility functions and constants (127 lines)
+- **Code Improvements**: 
+  - Eliminated 160+ lines of duplicated attachment processing code
+  - Simplified internal link conversion from 70+ to 25 lines
+  - Created reusable utility functions with clear responsibilities
+- **Better Organization**: 
+  - Centralized configuration constants
+  - Consistent error handling patterns
+  - Improved testability and maintainability
+- **Backward Compatibility**: All existing functionality preserved
+- **Performance**: Reduced redundant operations and optimized regex usage
+
+### v1.0.4 - Enhanced GraphQL Schema
 - Enhanced GraphQL schema to expose full board and collection objects
 - Changed `boards: [String]` to `boards: [GuruBoard]` 
 - Changed `collection: String` to `collection: GuruCollection`
