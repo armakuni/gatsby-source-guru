@@ -263,6 +263,51 @@ exports.sourceNodes = async (
         console.log('Sample card structure:', JSON.stringify(searchResults[0], null, 2))
       }
 
+      // Collect all unique boards from the search results and fetch parent information
+      const allBoards = new Map()
+      if (Array.isArray(searchResults)) {
+        searchResults.forEach(card => {
+          if (card.boards && Array.isArray(card.boards)) {
+            card.boards.forEach(board => {
+              allBoards.set(board.id, board)
+            })
+          }
+        })
+      }
+
+      // Fetch parent information for all boards
+      console.log(`Fetching parent information for ${allBoards.size} boards...`)
+      const boardsWithParents = new Map()
+      
+      for (const [boardId, board] of allBoards) {
+        try {
+          const parentResponse = await fetch(
+            `https://api.getguru.com/api/v1/folders/${boardId}/parent`,
+            { headers }
+          )
+          
+          let parentFolder = null
+          if (parentResponse.ok) {
+            const parentData = await parentResponse.json()
+            parentFolder = parentData
+            console.log(`Board ${board.title} has parent: ${parentData.title}`)
+          } else {
+            console.log(`Board ${board.title} has no parent (${parentResponse.status})`)
+          }
+          
+          boardsWithParents.set(boardId, {
+            ...board,
+            parentFolder
+          })
+        } catch (error) {
+          console.warn(`Could not fetch parent for board ${boardId}:`, error.message)
+          boardsWithParents.set(boardId, {
+            ...board,
+            parentFolder: null
+          })
+        }
+      }
+
       // Create nodes for each card
       if (Array.isArray(searchResults)) {
         for (const card of searchResults) {
@@ -361,6 +406,12 @@ exports.sourceNodes = async (
           // Create a copy of card data without the original title field
           const { title: originalTitle, ...cardWithoutTitle } = card
           
+          // Update boards with parent information
+          const boardsWithParentInfo = card.boards ? card.boards.map(board => {
+            const boardWithParent = boardsWithParents.get(board.id)
+            return boardWithParent || board
+          }) : []
+          
           const nodeData = {
             ...cardWithoutTitle,
             // Set title field to preferredPhrase
@@ -369,6 +420,7 @@ exports.sourceNodes = async (
             contentHtml: card.content, // Keep original HTML as well
             attachedFiles, // Array of downloaded files including images
             slug: createSlugFromTitle(card.preferredPhrase || originalTitle || card.id), // URL-safe slug
+            boards: boardsWithParentInfo, // Use boards with parent information
             // Handle owner and lastModifiedBy fields that might be objects
             owner: typeof card.owner === 'object' ? `${card.owner?.firstName || ''} ${card.owner?.lastName || ''}`.trim() || 'Unknown' : card.owner || 'Unknown',
             lastModifiedBy: typeof card.lastModifiedBy === 'object' ? `${card.lastModifiedBy?.firstName || ''} ${card.lastModifiedBy?.lastName || ''}`.trim() || 'Unknown' : card.lastModifiedBy || 'Unknown',
@@ -377,8 +429,8 @@ exports.sourceNodes = async (
             children: [],
             internal: {
               type: 'GuruCard',
-              content: JSON.stringify({...card, content: markdownContent, attachedFiles}),
-              contentDigest: createContentDigest({...card, content: markdownContent, attachedFiles})
+              content: JSON.stringify({...card, content: markdownContent, attachedFiles, boards: boardsWithParentInfo}),
+              contentDigest: createContentDigest({...card, content: markdownContent, attachedFiles, boards: boardsWithParentInfo})
             }
           }
           createNode(nodeData)
