@@ -53,26 +53,50 @@ const convertInternalLinks = (content, currentCard, allCards) => {
     console.log('Sample content with getguru.com links:', content.substring(0, 500))
   }
   
-  // Process all Guru link patterns
+  // New approach: Find complete anchor tags with Guru URLs and data-ghq-guru-card-id attributes
+  const anchorTagRegex = /<a[^>]+href=["']https:\/\/(app\.)?getguru\.com\/card\/[^"']*["'][^>]*data-ghq-guru-card-id=["']([a-f0-9-]+)["'][^>]*>/gi
+  
+  const anchorMatches = [...processedContent.matchAll(anchorTagRegex)]
+  console.log(`Found ${anchorMatches.length} anchor tags with Guru URLs and card IDs`)
+  
+  anchorMatches.forEach(match => {
+    const fullAnchorTag = match[0]
+    const cardId = match[2] // The card ID from data-ghq-guru-card-id
+    console.log(`Processing anchor tag with card ID: ${cardId}`)
+    
+    if (cardMap.has(cardId)) {
+      const localPath = cardMap.get(cardId)
+      console.log(`Converting card ID ${cardId} to local path: ${localPath}`)
+      
+      // Replace the href in the anchor tag
+      const updatedAnchorTag = fullAnchorTag.replace(
+        /href=["']https:\/\/(app\.)?getguru\.com\/card\/[^"']*["']/i,
+        `href="${localPath}"`
+      )
+      
+      processedContent = processedContent.replace(fullAnchorTag, updatedAnchorTag)
+      linksFound++
+    } else {
+      console.log(`Card ID ${cardId} not found in cardMap`)
+      // Log available card IDs for debugging
+      console.log('Available card IDs:', Array.from(cardMap.keys()).slice(0, 5))
+    }
+  })
+  
+  // Also process the original patterns for backward compatibility
   GURU_LINK_PATTERNS.forEach((pattern, index) => {
-    console.log(`Testing pattern ${index}: ${pattern}`)
+    console.log(`Testing fallback pattern ${index}: ${pattern}`)
     const matches = [...processedContent.matchAll(pattern)]
-    console.log(`Pattern ${index} found ${matches.length} matches`)
+    console.log(`Fallback pattern ${index} found ${matches.length} matches`)
     
     matches.forEach(match => {
       const cardId = match[1]
-      console.log(`Found card ID: ${cardId}`)
+      console.log(`Found card ID from fallback pattern: ${cardId}`)
       
       if (cardMap.has(cardId)) {
         const localPath = cardMap.get(cardId)
         const fullUrl = match[0]
         console.log(`Converting ${fullUrl} to ${localPath}`)
-        
-        // Replace the URL in href attributes
-        processedContent = processedContent.replace(
-          new RegExp(`href=["']${fullUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'gi'),
-          `href="${localPath}"`
-        )
         
         // Replace standalone URLs
         processedContent = processedContent.replace(
@@ -80,8 +104,6 @@ const convertInternalLinks = (content, currentCard, allCards) => {
           localPath
         )
         linksFound++
-      } else {
-        console.log(`Card ID ${cardId} not found in cardMap`)
       }
     })
   })
