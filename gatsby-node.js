@@ -33,21 +33,40 @@ const createCardMap = (allCards) => {
 
 // Function to convert internal Guru links to local links
 const convertInternalLinks = (content, currentCard, allCards) => {
-  if (!content || !allCards) return content
+  if (!content || !allCards) {
+    console.log(`convertInternalLinks: missing content or allCards - content: ${!!content}, allCards: ${!!allCards}`)
+    return content
+  }
   
   console.log(`Converting internal links for card: ${currentCard.title || currentCard.id}`)
+  console.log(`Content length: ${content.length}`)
+  console.log(`Number of cards available: ${allCards.length}`)
+  
   const cardMap = createCardMap(allCards)
+  console.log(`Card map size: ${cardMap.size}`)
+  
   let processedContent = content
   let linksFound = 0
   
+  // Log some sample content to see what we're working with
+  if (content.includes('getguru.com')) {
+    console.log('Sample content with getguru.com links:', content.substring(0, 500))
+  }
+  
   // Process all Guru link patterns
-  GURU_LINK_PATTERNS.forEach(pattern => {
+  GURU_LINK_PATTERNS.forEach((pattern, index) => {
+    console.log(`Testing pattern ${index}: ${pattern}`)
     const matches = [...processedContent.matchAll(pattern)]
+    console.log(`Pattern ${index} found ${matches.length} matches`)
+    
     matches.forEach(match => {
       const cardId = match[1]
+      console.log(`Found card ID: ${cardId}`)
+      
       if (cardMap.has(cardId)) {
         const localPath = cardMap.get(cardId)
         const fullUrl = match[0]
+        console.log(`Converting ${fullUrl} to ${localPath}`)
         
         // Replace the URL in href attributes
         processedContent = processedContent.replace(
@@ -61,12 +80,16 @@ const convertInternalLinks = (content, currentCard, allCards) => {
           localPath
         )
         linksFound++
+      } else {
+        console.log(`Card ID ${cardId} not found in cardMap`)
       }
     })
   })
   
   if (linksFound > 0) {
     console.log(`Converted ${linksFound} internal links`)
+  } else {
+    console.log(`No internal links found to convert`)
   }
   
   return processedContent
