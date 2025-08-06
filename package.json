@@ -1,6 +1,6 @@
 {
   "name": "gatsby-source-guru",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A Gatsby source plugin for fetching content from GetGuru knowledge base and creating pages from your cards",
   "main": "gatsby-node.js",
   "scripts": {

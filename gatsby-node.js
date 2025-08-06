@@ -49,7 +49,13 @@ const convertInternalLinks = (content, currentCard, allCards) => {
         const localPath = cardMap.get(cardId)
         const fullUrl = match[0]
         
-        // Replace in href attributes and standalone URLs
+        // Replace the URL in href attributes
+        processedContent = processedContent.replace(
+          new RegExp(`href=["']${fullUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'gi'),
+          `href="${localPath}"`
+        )
+        
+        // Replace standalone URLs
         processedContent = processedContent.replace(
           new RegExp(fullUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
           localPath
