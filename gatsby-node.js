@@ -307,6 +307,37 @@ exports.sourceNodes = async (
     headingStyle: 'atx',
     codeBlockStyle: 'fenced'
   })
+  
+  // Add table support
+  turndownService.addRule('table', {
+    filter: 'table',
+    replacement: function (content, node) {
+      return '\n\n' + content + '\n\n'
+    }
+  })
+  
+  turndownService.addRule('tableRow', {
+    filter: 'tr',
+    replacement: function (content, node) {
+      let cells = Array.from(node.querySelectorAll('th, td'))
+      let isHeaderRow = node.querySelector('th') !== null
+      let markdown = '|' + cells.map(cell => ' ' + (cell.textContent || '').trim() + ' ').join('|') + '|\n'
+      
+      if (isHeaderRow) {
+        let separator = '|' + cells.map(() => ' --- ').join('|') + '|\n'
+        markdown += separator
+      }
+      
+      return markdown
+    }
+  })
+  
+  turndownService.addRule('tableCell', {
+    filter: ['th', 'td'],
+    replacement: function (content) {
+      return content.replace(/\|/g, '\\|')  // Escape pipe characters in cell content
+    }
+  })
 
   console.log('Guru Plugin: Starting data fetch...')
   console.log('Auth mode:', authMode)
