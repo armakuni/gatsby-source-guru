@@ -353,9 +353,33 @@ exports.sourceNodes = async (
       // Fetch parent information for all boards
       const boardsWithParents = await fetchBoardParents(allBoards, headers)
 
+      // Filter cards if onlyVerified option is enabled
+      let cardsToProcess = searchResults
+      if (pluginOptions.onlyVerified === true) {
+        // Strategy: Include all TRUSTED cards, but for NEEDS_VERIFICATION cards,
+        // only include them if there's no TRUSTED version with the same title
+        const trustedCards = searchResults.filter(card => card.verificationState === 'TRUSTED')
+        const unverifiedCards = searchResults.filter(card => card.verificationState === 'NEEDS_VERIFICATION')
+        
+        // Get titles of all trusted cards (normalized)
+        const trustedTitles = new Set(trustedCards.map(card => 
+          (card.title || card.preferredPhrase || 'Untitled').toLowerCase().trim()
+        ))
+        
+        // Include unverified cards only if their title doesn't exist in trusted cards
+        const uniqueUnverifiedCards = unverifiedCards.filter(card => {
+          const cardTitle = (card.title || card.preferredPhrase || 'Untitled').toLowerCase().trim()
+          return !trustedTitles.has(cardTitle)
+        })
+        
+        cardsToProcess = [...trustedCards, ...uniqueUnverifiedCards]
+        
+        console.log(`Processed ${cardsToProcess.length} cards (${trustedCards.length} trusted, ${uniqueUnverifiedCards.length} unique unverified) from ${searchResults.length} total`)
+      }
+
       // Create nodes for each card
-      if (Array.isArray(searchResults)) {
-        for (const card of searchResults) {
+      if (Array.isArray(cardsToProcess)) {
+        for (const card of cardsToProcess) {
           let { processedContent, attachedFiles } = { processedContent: card.content || '', attachedFiles: [] }
           
           if (downloadAttachments) {
@@ -364,8 +388,8 @@ exports.sourceNodes = async (
             attachedFiles = result.attachedFiles
           }
           
-          // Convert internal Guru links to local links
-          processedContent = convertInternalLinks(processedContent, card, searchResults)
+          // Convert internal Guru links to local links - use filtered cards for link conversion
+          processedContent = convertInternalLinks(processedContent, card, cardsToProcess)
           
           // Convert processed HTML content to markdown
           const markdownContent = processedContent ? turndownService.turndown(processedContent) : ''
@@ -394,9 +418,16 @@ exports.sourceNodes = async (
 
       const cards = await cardsResponse.json()
 
+      // Filter cards if onlyVerified option is enabled
+      let cardsToProcess = cards
+      if (pluginOptions.onlyVerified === true) {
+        cardsToProcess = cards.filter(card => card.verificationState === 'TRUSTED')
+        console.log(`Filtered to ${cardsToProcess.length} verified cards (from ${cards.length} total)`)
+      }
+
       // Create nodes for each card using helper function
-      for (const card of cards) {
-        await processCard(card, cards, turndownService, downloadAttachments, attachmentDir, headers, createNodeId, createContentDigest, createNode)
+      for (const card of cardsToProcess) {
+        await processCard(card, cardsToProcess, turndownService, downloadAttachments, attachmentDir, headers, createNodeId, createContentDigest, createNode)
       }
 
       // Optionally fetch collections
