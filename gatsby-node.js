@@ -320,7 +320,21 @@ exports.sourceNodes = async (
     filter: 'tr',
     replacement: function (content, node) {
       let cells = Array.from(node.querySelectorAll('th, td'))
-      let isHeaderRow = node.querySelector('th') !== null
+      
+      // Check if this is a header row - either has <th> elements OR is the first row in the table
+      let hasThElements = node.querySelector('th') !== null
+      let isFirstRowInTable = false
+      
+      if (!hasThElements) {
+        // Check if this is the first row in the table (for Guru's structure where headers use <td>)
+        let table = node.closest('table')
+        if (table) {
+          let firstRow = table.querySelector('tr')
+          isFirstRowInTable = (firstRow === node)
+        }
+      }
+      
+      let isHeaderRow = hasThElements || isFirstRowInTable
       let markdown = '|' + cells.map(cell => ' ' + (cell.textContent || '').trim() + ' ').join('|') + '|\n'
       
       if (isHeaderRow) {
