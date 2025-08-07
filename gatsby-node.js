@@ -308,62 +308,70 @@ exports.sourceNodes = async (
     codeBlockStyle: 'fenced'
   })
   
-  // Add table support
-  turndownService.addRule('table', {
+  // Add complete table handling
+  turndownService.addRule('tables', {
     filter: 'table',
     replacement: function (content, node) {
-      return '\n\n' + content + '\n\n'
+      // Process all rows at once for better control
+      const rows = Array.from(node.querySelectorAll('tr'))
+      if (rows.length === 0) return ''
+      
+      let output = []
+      let isFirstRow = true
+      
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('th, td'))
+        if (cells.length === 0) return
+        
+        const cellContents = cells.map(cell => {
+          // Convert p tags to line breaks before getting text
+          let html = cell.innerHTML || ''
+          // Replace p tags with line breaks
+          html = html.replace(/<p[^>]*>/gi, '').replace(/<\/p>/gi, '<br>')
+          // Replace br tags with markdown line breaks
+          html = html.replace(/<br\s*\/?>/gi, '<br>')
+          
+          // Create temporary element to get text content
+          const temp = node.ownerDocument.createElement('div')
+          temp.innerHTML = html
+          let text = (temp.textContent || '').trim()
+          
+          // Preserve <br> markers in text
+          text = html.replace(/<[^>]+>/g, match => {
+            if (match.toLowerCase().includes('<br')) return '<br>'
+            return ''
+          }).trim()
+          
+          // Clean up multiple spaces
+          text = text.replace(/[ \t]+/g, ' ')
+          // Escape pipes
+          text = text.replace(/\|/g, '\\|')
+          return text
+        })
+        
+        // Add the row
+        output.push('| ' + cellContents.join(' | ') + ' |')
+        
+        // After first row, add separator
+        if (isFirstRow) {
+          output.push('|' + cells.map(() => ' --- ').join('|') + '|')
+          isFirstRow = false
+        }
+      })
+      
+      return '\n\n' + output.join('\n') + '\n\n'
     }
+  })
+  
+  // Remove default table element handling to prevent interference
+  turndownService.addRule('tableCell', {
+    filter: ['td', 'th'],
+    replacement: function() { return '' }
   })
   
   turndownService.addRule('tableRow', {
     filter: 'tr',
-    replacement: function (content, node) {
-      let cells = Array.from(node.querySelectorAll('th, td'))
-      
-      // Check if this is a header row - either has <th> elements OR is the first row in the table
-      let hasThElements = node.querySelector('th') !== null
-      let isFirstRowInTable = false
-      
-      if (!hasThElements) {
-        // Check if this is the first row in the table (for Guru's structure where headers use <td>)
-        let table = node.closest('table')
-        if (table) {
-          let firstRow = table.querySelector('tr')
-          isFirstRowInTable = (firstRow === node)
-        }
-      }
-      
-      let isHeaderRow = hasThElements || isFirstRowInTable
-      
-      // Process each cell content properly, handling multi-line content
-      let cellContents = cells.map(cell => {
-        // Get the text content and clean it up
-        let text = (cell.textContent || '').trim()
-        // Replace newlines with spaces and normalize whitespace
-        text = text.replace(/\s+/g, ' ')
-        // Escape pipe characters
-        text = text.replace(/\|/g, '\\|')
-        return text
-      })
-      
-      let markdown = '|' + cellContents.map(content => ' ' + content + ' ').join('|') + '|\n'
-      
-      if (isHeaderRow) {
-        let separator = '|' + cells.map(() => ' --- ').join('|') + '|\n'
-        markdown += separator
-      }
-      
-      return markdown
-    }
-  })
-  
-  turndownService.addRule('tableCell', {
-    filter: ['th', 'td'],
-    replacement: function (content) {
-      // Return empty string to prevent duplication - content is handled in tableRow rule
-      return ''
-    }
+    replacement: function() { return '' }
   })
 
   console.log('Guru Plugin: Starting data fetch...')
