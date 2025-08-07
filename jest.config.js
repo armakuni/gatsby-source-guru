@@ -7,6 +7,8 @@ module.exports = {
   ],
   collectCoverageFrom: [
     'gatsby-node.js',
+    'utils.js',
+    'schema.js',
     '!node_modules/**',
     '!**/*.test.js'
   ],
@@ -18,10 +20,10 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 4,
-      lines: 4,
-      statements: 4
+      branches: 5,
+      functions: 5,
+      lines: 8,
+      statements: 8
     }
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup.js'],

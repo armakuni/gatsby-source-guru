@@ -309,57 +309,51 @@ exports.sourceNodes = async (
   })
   
   // Add complete table handling
-  turndownService.addRule('tables', {
+  turndownService.addRule('guruTable', {
     filter: 'table',
-    replacement: function (content, node) {
-      // Process all rows at once for better control
+    replacement: function(content, node) {
+      console.log('DEBUG: TABLE CONVERSION RUNNING - FIXED VERSION!')
       const rows = Array.from(node.querySelectorAll('tr'))
       if (rows.length === 0) return ''
       
-      let output = []
-      let isFirstRow = true
+      const tableRows = []
       
-      rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('th, td'))
+      rows.forEach((row, rowIndex) => {
+        const cells = Array.from(row.querySelectorAll('td, th'))
         if (cells.length === 0) return
         
-        const cellContents = cells.map(cell => {
-          // Convert p tags to line breaks before getting text
-          let html = cell.innerHTML || ''
-          // Replace p tags with line breaks
-          html = html.replace(/<p[^>]*>/gi, '').replace(/<\/p>/gi, '<br>')
-          // Replace br tags with markdown line breaks
-          html = html.replace(/<br\s*\/?>/gi, '<br>')
+        const cellTexts = cells.map(cell => {
+          // Get all paragraphs in the cell
+          const paragraphs = Array.from(cell.querySelectorAll('p'))
+          let cellContent = ''
           
-          // Create temporary element to get text content
-          const temp = node.ownerDocument.createElement('div')
-          temp.innerHTML = html
-          let text = (temp.textContent || '').trim()
+          if (paragraphs.length > 0) {
+            // Join multiple paragraphs with <br>
+            cellContent = paragraphs
+              .map(p => (p.textContent || '').trim())
+              .filter(text => text.length > 0)
+              .join('<br>')
+          } else {
+            // Fallback to textContent if no paragraphs
+            cellContent = (cell.textContent || '').trim()
+          }
           
-          // Preserve <br> markers in text
-          text = html.replace(/<[^>]+>/g, match => {
-            if (match.toLowerCase().includes('<br')) return '<br>'
-            return ''
-          }).trim()
-          
-          // Clean up multiple spaces
-          text = text.replace(/[ \t]+/g, ' ')
-          // Escape pipes
-          text = text.replace(/\|/g, '\\|')
-          return text
+          // Escape pipe characters
+          return cellContent.replace(/\|/g, '\\|')
         })
         
-        // Add the row
-        output.push('| ' + cellContents.join(' | ') + ' |')
+        // Add the data row
+        tableRows.push('| ' + cellTexts.join(' | ') + ' |')
         
-        // After first row, add separator
-        if (isFirstRow) {
-          output.push('|' + cells.map(() => ' --- ').join('|') + '|')
-          isFirstRow = false
+        // Add separator after first row (header)
+        if (rowIndex === 0) {
+          tableRows.push('|' + cells.map(() => ' --- ').join('|') + '|')
         }
       })
       
-      return '\n\n' + output.join('\n') + '\n\n'
+      const result = '\n\n' + tableRows.join('\n') + '\n\n'
+      console.log('DEBUG: Table conversion result:', result)
+      return result
     }
   })
   

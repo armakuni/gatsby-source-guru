@@ -30,11 +30,12 @@ const GURU_LINK_PATTERNS = [
 // Helper function to create URL-safe slugs from titles
 const createSlugFromTitle = (title) => {
   return title
+    .trim()                   // Trim first to remove leading/trailing spaces
     .toLowerCase()
     .replace(/[^\w\s-]/g, '') // Remove special characters
     .replace(/\s+/g, '-')     // Replace spaces with hyphens
     .replace(/-+/g, '-')      // Replace multiple hyphens with single
-    .trim()
+    .replace(/^-|-$/g, '')    // Remove leading/trailing hyphens
 }
 
 // Utility functions
