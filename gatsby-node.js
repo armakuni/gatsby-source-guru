@@ -335,7 +335,19 @@ exports.sourceNodes = async (
       }
       
       let isHeaderRow = hasThElements || isFirstRowInTable
-      let markdown = '|' + cells.map(cell => ' ' + (cell.textContent || '').trim() + ' ').join('|') + '|\n'
+      
+      // Process each cell content properly, handling multi-line content
+      let cellContents = cells.map(cell => {
+        // Get the text content and clean it up
+        let text = (cell.textContent || '').trim()
+        // Replace newlines with spaces and normalize whitespace
+        text = text.replace(/\s+/g, ' ')
+        // Escape pipe characters
+        text = text.replace(/\|/g, '\\|')
+        return text
+      })
+      
+      let markdown = '|' + cellContents.map(content => ' ' + content + ' ').join('|') + '|\n'
       
       if (isHeaderRow) {
         let separator = '|' + cells.map(() => ' --- ').join('|') + '|\n'
@@ -349,7 +361,8 @@ exports.sourceNodes = async (
   turndownService.addRule('tableCell', {
     filter: ['th', 'td'],
     replacement: function (content) {
-      return content.replace(/\|/g, '\\|')  // Escape pipe characters in cell content
+      // Return empty string to prevent duplication - content is handled in tableRow rule
+      return ''
     }
   })
 
