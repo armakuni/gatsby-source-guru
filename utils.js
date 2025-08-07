@@ -29,13 +29,21 @@ const GURU_LINK_PATTERNS = [
 
 // Helper function to create URL-safe slugs from titles
 const createSlugFromTitle = (title) => {
-  return title
-    .trim()                   // Trim first to remove leading/trailing spaces
+  if (!title) return ''
+  
+  // Normalize unicode characters and handle special cases
+  const slug = title
+    .trim()                          // Trim first to remove leading/trailing spaces
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')     // Replace spaces with hyphens
-    .replace(/-+/g, '-')      // Replace multiple hyphens with single
-    .replace(/^-|-$/g, '')    // Remove leading/trailing hyphens
+    .normalize('NFD')                // Decompose accented characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+    .replace(/[^\w\s-]/g, '')        // Remove special characters and emojis
+    .replace(/\s+/g, '-')            // Replace spaces with hyphens
+    .replace(/-+/g, '-')             // Replace multiple hyphens with single
+    .replace(/^-|-$/g, '')           // Remove leading/trailing hyphens
+  
+  // If slug is empty after processing, return empty string (caller should provide fallback)
+  return slug
 }
 
 // Utility functions

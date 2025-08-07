@@ -9,8 +9,13 @@ module.exports = {
     'gatsby-node.js',
     'utils.js',
     'schema.js',
+    'api.js',
+    'processors.js',
+    'card-processor.js',
     '!node_modules/**',
-    '!**/*.test.js'
+    '!**/*.test.js',
+    '!coverage/**',
+    '!**/__tests__/**'
   ],
   coverageReporters: [
     'text',

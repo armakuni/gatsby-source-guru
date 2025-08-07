@@ -8,18 +8,31 @@ const typeDefs = `
     title: String
     collection: GuruCollection
     collectionId: String
-    boards: [GuruBoard]
+    boards: [GuruBoardInfo]
     boardIds: [String]
     owner: String
-    lastModified: String
+    lastModified: Date
     lastModifiedBy: String
-    dateCreated: String
+    lastVerifiedBy: String
+    dateCreated: Date
+    lastVerified: Date
+    nextVerificationDate: Date
     verificationState: String
     verificationInterval: Int
+    verificationType: String
     shareStatus: String
     tags: [String]
     slug: String!
     attachedFiles: [GuruAttachment]
+  }
+  
+  type GuruBoardInfo {
+    id: String!
+    title: String!
+    slug: String
+    items: [String]
+    numberOfFacts: Int
+    parentFolder: GuruParentFolder
   }
   
   type GuruBoard {
@@ -28,6 +41,14 @@ const typeDefs = `
     slug: String
     items: [String]
     numberOfFacts: Int
+    parentFolder: GuruBoard
+  }
+  
+  type GuruUser {
+    id: String!
+    firstName: String
+    lastName: String
+    email: String
   }
   
   type GuruCollection {
