@@ -2,6 +2,7 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const he = require('he')
 const TurndownService = require('turndown')
 const {
   GURU_LINK_PATTERNS,
@@ -213,6 +214,38 @@ const createTurndownService = () => {
     codeBlockStyle: 'fenced'
   })
   
+  // Add Guru code block handling
+  turndownService.addRule('guruCodeBlock', {
+    filter: function(node) {
+      return node.nodeName === 'PRE' && 
+             node.classList.contains('ghq-card-content__code-block')
+    },
+    replacement: function(content, node) {
+      console.log('DEBUG: GURU CODE BLOCK CONVERSION RUNNING!')
+      
+      // Extract language from data attribute
+      const language = node.getAttribute('data-ghq-code-block-syntax') || 
+                      node.getAttribute('data-ghq-code-block-prism') || ''
+      
+      // Get all code line elements
+      const codeLines = Array.from(node.querySelectorAll('.ghq-card-content__code-block-line'))
+      
+      if (codeLines.length === 0) {
+        // Fallback to regular content if no line elements found
+        const codeContent = (node.textContent || '').trim()
+        return `\n\n\`\`\`${language.toLowerCase()}\n${codeContent}\n\`\`\`\n\n`
+      }
+      
+      // Extract text content from each line
+      const lines = codeLines.map(line => line.textContent || '').join('\n')
+      
+      console.log(`DEBUG: Code block conversion - Language: ${language}, Lines: ${codeLines.length}`)
+      console.log(`DEBUG: Code content preview: ${lines.substring(0, 100)}...`)
+      
+      return `\n\n\`\`\`${language.toLowerCase()}\n${lines}\n\`\`\`\n\n`
+    }
+  })
+
   // Add complete table handling
   turndownService.addRule('guruTable', {
     filter: 'table',
@@ -271,6 +304,15 @@ const createTurndownService = () => {
     }
   })
   
+  // Prevent default handling of Guru code block lines (handled by guruCodeBlock rule)
+  turndownService.addRule('guruCodeBlockLine', {
+    filter: function(node) {
+      return node.nodeName === 'CODE' && 
+             node.classList.contains('ghq-card-content__code-block-line')
+    },
+    replacement: function() { return '' }
+  })
+
   // Remove default table element handling to prevent interference
   turndownService.addRule('tableCell', {
     filter: ['td', 'th'],
@@ -302,7 +344,9 @@ const processCardContent = async (card, allCards, downloadAttachments, attachmen
   
   // Convert processed HTML content to markdown
   const turndownService = createTurndownService()
-  const markdownContent = processedContent ? turndownService.turndown(processedContent) : ''
+  // Decode HTML entities before conversion to ensure proper rendering in markdown
+  const decodedContent = processedContent ? he.decode(processedContent) : ''
+  const markdownContent = decodedContent ? turndownService.turndown(decodedContent) : ''
   
   return { markdownContent, attachedFiles }
 }
