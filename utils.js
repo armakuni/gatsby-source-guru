@@ -37,6 +37,7 @@ const createSlugFromTitle = (title) => {
     .toLowerCase()
     .normalize('NFD')                // Decompose accented characters
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+    .replace(/\./g, '-')             // Replace dots with hyphens (for hierarchical numbering like 03.01)
     .replace(/[^\w\s-]/g, '')        // Remove special characters and emojis
     .replace(/\s+/g, '-')            // Replace spaces with hyphens
     .replace(/-+/g, '-')             // Replace multiple hyphens with single
