@@ -37,11 +37,14 @@ describe('api - comprehensive tests', () => {
     it('should handle null response from API', async () => {
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(null)
+        json: jest.fn().mockResolvedValue(null),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const result = await fetchCardsFromSearch({})
-      expect(result).toBeNull()
+      expect(result).toEqual([])
     })
 
     it('should handle malformed JSON response', async () => {
@@ -56,7 +59,10 @@ describe('api - comprehensive tests', () => {
     it('should log correct search URL format', async () => {
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue([])
+        json: jest.fn().mockResolvedValue([]),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
@@ -64,7 +70,7 @@ describe('api - comprehensive tests', () => {
       await fetchCardsFromSearch({})
 
       expect(consoleSpy).toHaveBeenCalledWith('Using search API for collection auth mode')
-      expect(consoleSpy).toHaveBeenCalledWith('Search URL:', `${GURU_SEARCH_BASE}?q=`)
+      expect(consoleSpy).toHaveBeenCalledWith('Fetching page 1: https://api.getguru.com/api/v1/search/query?q=')
 
       consoleSpy.mockRestore()
     })
@@ -96,14 +102,17 @@ describe('api - comprehensive tests', () => {
     it('should not log sample card when results are empty', async () => {
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue([])
+        json: jest.fn().mockResolvedValue([]),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
 
       await fetchCardsFromSearch({})
 
-      expect(consoleSpy).toHaveBeenCalledWith('Found 0 cards via search')
+      expect(consoleSpy).toHaveBeenCalledWith('Found 0 cards on page 1')
       expect(consoleSpy).not.toHaveBeenCalledWith(
         'Sample card structure:',
         expect.any(String)
@@ -318,7 +327,7 @@ describe('api - comprehensive tests', () => {
       })
 
       let result = await downloadFile('https://example.com/notfound', {})
-      expect(result).toBeNull()
+      expect(result).toEqual([])
 
       // Test 500 error
       fetch.mockResolvedValueOnce({
@@ -328,7 +337,7 @@ describe('api - comprehensive tests', () => {
       })
 
       result = await downloadFile('https://example.com/servererror', {})
-      expect(result).toBeNull()
+      expect(result).toEqual([])
 
       expect(warnSpy).toHaveBeenCalledTimes(2)
 
@@ -344,7 +353,7 @@ describe('api - comprehensive tests', () => {
       })
 
       const result = await downloadFile('https://example.com/file', {})
-      expect(result).toBeNull()
+      expect(result).toEqual([])
     })
 
     it('should handle Guru content API special cases', async () => {

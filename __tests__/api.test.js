@@ -42,7 +42,10 @@ describe('api', () => {
 
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockCards)
+        json: jest.fn().mockResolvedValue(mockCards),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const pluginOptions = {
@@ -86,7 +89,10 @@ describe('api', () => {
 
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockCards)
+        json: jest.fn().mockResolvedValue(mockCards),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
@@ -104,7 +110,10 @@ describe('api', () => {
     it('should handle empty search results', async () => {
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue([])
+        json: jest.fn().mockResolvedValue([]),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const result = await fetchCardsFromSearch({})
@@ -122,7 +131,10 @@ describe('api', () => {
 
       fetch.mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockCards)
+        json: jest.fn().mockResolvedValue(mockCards),
+        headers: {
+          get: jest.fn().mockReturnValue(null)
+        }
       })
 
       const result = await fetchCardsFromTeam('test-team', {})

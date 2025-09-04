@@ -58,7 +58,7 @@ const fetchCardsFromSearch = async (pluginOptions) => {
     }
     
     // Check for Link header to get next page URL
-    const linkHeader = searchResponse.headers.get('link')
+    const linkHeader = searchResponse.headers && searchResponse.headers.get ? searchResponse.headers.get('link') : null
     currentUrl = null // Default to no more pages
     
     if (linkHeader) {
