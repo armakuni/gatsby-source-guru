@@ -327,7 +327,7 @@ describe('api - comprehensive tests', () => {
       })
 
       let result = await downloadFile('https://example.com/notfound', {})
-      expect(result).toEqual([])
+      expect(result).toBeNull()
 
       // Test 500 error
       fetch.mockResolvedValueOnce({
@@ -337,7 +337,7 @@ describe('api - comprehensive tests', () => {
       })
 
       result = await downloadFile('https://example.com/servererror', {})
-      expect(result).toEqual([])
+      expect(result).toBeNull()
 
       expect(warnSpy).toHaveBeenCalledTimes(2)
 
@@ -353,7 +353,7 @@ describe('api - comprehensive tests', () => {
       })
 
       const result = await downloadFile('https://example.com/file', {})
-      expect(result).toEqual([])
+      expect(result).toBeNull()
     })
 
     it('should handle Guru content API special cases', async () => {
