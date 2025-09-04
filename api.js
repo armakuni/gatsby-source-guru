@@ -7,47 +7,80 @@ const GURU_API_BASE = 'https://api.getguru.com/api/v1'
 const GURU_SEARCH_BASE = 'https://api.getguru.com/api/v1/search/query'
 
 /**
- * Fetch cards from Guru search API (collection mode)
+ * Fetch cards from Guru search API (collection mode) with Link header pagination
  */
 const fetchCardsFromSearch = async (pluginOptions) => {
   const headers = createAuthHeaders(pluginOptions)
-  const searchUrl = `${GURU_SEARCH_BASE}?q=`
   
   console.log('Using search API for collection auth mode')
-  console.log('Search URL:', searchUrl)
   
-  const searchResponse = await fetch(searchUrl, { headers })
+  let allCards = []
+  let currentUrl = `${GURU_SEARCH_BASE}?q=`
+  let pageCount = 1
+  
+  while (currentUrl) {
+    console.log(`Fetching page ${pageCount}: ${currentUrl}`)
+    
+    const searchResponse = await fetch(currentUrl, { headers })
 
-  if (!searchResponse.ok) {
-    const errorBody = await searchResponse.text()
-    console.error('Response status:', searchResponse.status)
-    console.error('Response headers:', searchResponse.headers)
-    console.error('Error body:', errorBody)
-    throw new Error(`Failed to fetch cards via search: ${searchResponse.status} ${searchResponse.statusText} - ${errorBody}`)
-  }
+    if (!searchResponse.ok) {
+      const errorBody = await searchResponse.text()
+      console.error('Response status:', searchResponse.status)
+      console.error('Response headers:', searchResponse.headers)
+      console.error('Error body:', errorBody)
+      throw new Error(`Failed to fetch cards via search: ${searchResponse.status} ${searchResponse.statusText} - ${errorBody}`)
+    }
 
-  const searchResults = await searchResponse.json()
-  
-  // Handle null responses
-  if (searchResults === null) {
-    console.log('Found 0 cards via search (null response)')
-    return null
+    const searchResults = await searchResponse.json()
+    
+    // Handle null responses
+    if (searchResults === null) {
+      console.log(`Found 0 cards on page ${pageCount} (null response)`)
+      break
+    }
+    
+    // Handle non-array responses
+    if (!Array.isArray(searchResults)) {
+      console.log(`Found 0 cards on page ${pageCount} (invalid response)`)
+      break
+    }
+    
+    console.log(`Found ${searchResults.length || 0} cards on page ${pageCount}`)
+    
+    // Add cards to collection
+    if (searchResults.length > 0) {
+      allCards = allCards.concat(searchResults)
+      
+      // Log the first card structure on first page
+      if (pageCount === 1) {
+        console.log('Sample card structure:', JSON.stringify(searchResults[0], null, 2))
+      }
+    }
+    
+    // Check for Link header to get next page URL
+    const linkHeader = searchResponse.headers.get('link')
+    currentUrl = null // Default to no more pages
+    
+    if (linkHeader) {
+      console.log(`Link header: ${linkHeader}`)
+      // Parse Link header to find next page
+      // Format: <https://api.getguru.com/api/v1/search/query?q=&cursor=xyz>; rel="next"
+      const nextMatch = linkHeader.match(/<([^>]+)>;\s*rel=["']?next["']?/i)
+      if (nextMatch) {
+        currentUrl = nextMatch[1]
+        console.log(`Next page URL: ${currentUrl}`)
+      } else {
+        console.log('No next page found in Link header')
+      }
+    } else {
+      console.log('No Link header found - assuming last page')
+    }
+    
+    pageCount++
   }
   
-  // Handle non-array responses
-  if (!Array.isArray(searchResults)) {
-    console.log('Found 0 cards via search (invalid response)')
-    return []
-  }
-  
-  console.log(`Found ${searchResults.length || 0} cards via search`)
-  
-  // Log the first card to see its structure
-  if (searchResults.length > 0) {
-    console.log('Sample card structure:', JSON.stringify(searchResults[0], null, 2))
-  }
-
-  return searchResults
+  console.log(`Total cards fetched: ${allCards.length} across ${pageCount - 1} pages`)
+  return allCards
 }
 
 /**
